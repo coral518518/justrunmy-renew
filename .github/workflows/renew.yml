@@ -80,12 +80,14 @@ jobs:
           server: "$HOST_PORT"
           auth: "$AUTH"
 
+          tls:
+            insecure: true
+  
           socks5:
             listen: 127.0.0.1:${SOCKS_PORT}
 
           transport:
-            udp:
-              hopInterval: 30s
+            type: udp
           EOF
 
           nohup hysteria client -c config.yaml > hysteria.log 2>&1 &
