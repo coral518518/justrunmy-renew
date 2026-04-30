@@ -59,7 +59,7 @@ jobs:
       # 步骤 5: 安装 Hysteria2（如果需要代理）
       - name: 📡 安装 Hysteria2
         run: |
-          wget -O hysteria https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+          wget -O hysteria https://github.com/apernet/hysteria/releases/download/app/v2.4.4/hysteria-linux-amd64
           chmod +x hysteria
           sudo mv hysteria /usr/local/bin/
           
@@ -85,9 +85,6 @@ jobs:
   
           socks5:
             listen: 127.0.0.1:${SOCKS_PORT}
-
-          transport:
-            type: udp
           EOF
 
           nohup hysteria client -c config.yaml > hysteria.log 2>&1 &
