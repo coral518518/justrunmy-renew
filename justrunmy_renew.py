@@ -397,7 +397,8 @@ def main():
     sb_kwargs = {"uc": True, "test": True, "headless": False}
     
     if use_proxy:
-        proxy_str = "http://127.0.0.1:8080"
+        socks_port = os.environ.get("SOCKS_PORT", "51080")
+        proxy_str = f"socks5://127.0.0.1:{socks_port}"
         print(f"🔗 挂载 Gost 代理: {proxy_str}")
         sb_kwargs["proxy"] = proxy_str
     else:
