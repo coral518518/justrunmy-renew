@@ -59,23 +59,37 @@ jobs:
       # 步骤 5: 安装 Hysteria2（如果需要代理）
       - name: 📡 安装 Hysteria2
         run: |
-          if [ -n "$HY2_PROXY_URL" ]; then
-            echo "安装 Hysteria2..."
+          echo "启动 Hysteria2..."
 
-            if ! command -v hysteria &> /dev/null; then
-              curl -L -o hysteria \
-                https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+          # 解析 hysteria2:// URL
+          URL="$HY2_PROXY_URL"
 
-              chmod +x hysteria
-              sudo mv hysteria /usr/local/bin/hysteria
-            fi
+          # 去掉协议头
+          URL_NO_PROTO="${URL#hysteria2://}"
 
-            hysteria version || echo "⚠️ hysteria 未正确安装"
+          # 提取 auth 和 host
+          AUTH=$(echo "$URL_NO_PROTO" | cut -d'@' -f1)
+          HOST_PORT=$(echo "$URL_NO_PROTO" | cut -d'@' -f2 | cut -d'?' -f1)
 
-            echo "✅ Hysteria2 安装完成"
-          else
-            echo "⚠️ 未配置代理，跳过 Hysteria2 安装"
-          fi
+          # 生成 config.yaml
+          cat > config.yaml <<EOF
+          server: "$HOST_PORT"
+          auth: "$AUTH"
+
+          socks5:
+            listen: 127.0.0.1:${SOCKS_PORT}
+
+          transport:
+            udp:
+              hopInterval: 30s
+          EOF
+
+          nohup hysteria client -c config.yaml > hysteria.log 2>&1 &
+
+          sleep 3
+
+          echo "✅ Hysteria2 已启动"
+          ss -lntup | grep ${SOCKS_PORT} || echo "⚠️ 端口未监听"
 
       # 步骤 6: 执行脚本
       - name: 🚀 运行续期脚本
@@ -86,6 +100,7 @@ jobs:
           TG_CHAT_ID: ${{ env.TG_CHAT_ID }}
           HY2_PROXY_URL: ${{ env.HY2_PROXY_URL }}
           SOCKS_PORT: ${{ env.SOCKS_PORT }}
+          ALL_PROXY: socks5://127.0.0.1:${{ env.SOCKS_PORT }}
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
             python justrunmy_renew.py
