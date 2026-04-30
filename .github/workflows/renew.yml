@@ -59,6 +59,10 @@ jobs:
       # 步骤 5: 安装 Hysteria2（如果需要代理）
       - name: 📡 安装 Hysteria2
         run: |
+          wget -O hysteria https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+          chmod +x hysteria
+          sudo mv hysteria /usr/local/bin/
+          
           echo "启动 Hysteria2..."
 
           # 解析 hysteria2:// URL
